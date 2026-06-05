@@ -111,23 +111,33 @@ void black_figure(int offset, int squaresize, Texture2D king, Texture2D queen, T
 
 }
 
-int main()
+void start_stop()
 {
-    const int board = 800;
-    const int offset = 50;
-    
-    InitWindow(board + 2 * offset, board + 2 * offset, "Chess board");
-    SetTargetFPS(60);
+    const int width = 75;
+    const int height = 50;
+    const int cord_x = 912.5;
+    const int cord_y = 475;
 
-    load_figure();
-    
-    // boarda
+    if(GetMouseX() >= 912.5 && GetMouseX() <= 987.5 && GetMouseY() >= 475 && GetMouseY() <= 525 && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+        DrawRectangle(cord_x, cord_y, width, height, RED);
+        DrawText("Stop", cord_x + 10, cord_y + 15, 20, BLACK);
+    }else
+    {
+        DrawRectangle(cord_x, cord_y, width, height, GREEN);
+        DrawText("Start", cord_x + 10, cord_y + 15, 20, BLACK);
+    }
+}
+
+//funkce na vykreslení šachovnice a figurek
+void board(int offset, int board_size, Texture2D white_king, Texture2D white_queen, Texture2D white_pawn, Texture2D white_knight, Texture2D white_bishop, Texture2D white_rook, Texture2D black_king, Texture2D black_queen, Texture2D black_pawn, Texture2D black_knight, Texture2D black_bishop, Texture2D black_rook)
+{
     while(!WindowShouldClose())
     {
         BeginDrawing();
         ClearBackground(GRAY); // Základní pozadí okna
 
-        int squareSize = board / 8; // Každé políčko bude mít přesně 100x100 pixelů
+        int squareSize = board_size / 8; // Každé políčko bude mít přesně 100x100 pixelů
 
         // Cyklus pro 8 řádků (shora dolů)
         for (int r = 0; r < 8; r++)
@@ -151,7 +161,8 @@ int main()
             }
         }
 
-        DrawText("Chess Board", board / 2 - 75, board / 2 - 400, 40, BLACK);
+        //Nadpis
+        DrawText("Chess Board", board_size / 2 - 75, board_size / 2 - 400, 40, BLACK);
             
         // Název pole
         char chars[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
@@ -159,15 +170,36 @@ int main()
 
         for(int i = 0; i < 8; i++)
         {
-            DrawText(TextFormat("%c", chars[i]), offset + i * squareSize + squareSize / 2 - 10, offset + board + 10, 20, BLACK);
+            DrawText(TextFormat("%c", chars[i]), offset + i * squareSize + squareSize / 2 - 10, offset + board_size + 10, 20, BLACK);
             DrawText(TextFormat("%d", numbers[i]), offset - 30, offset + i * squareSize + squareSize / 2 - 10, 20, BLACK);
         }
 
+        //vykreslení figurek
         white_figure(offset, squareSize, white_king, white_queen, white_pawn, white_knight, white_bishop, white_rook);
         black_figure(offset, squareSize, black_king, black_queen, black_pawn, black_knight, black_bishop, black_rook);
 
+        //tlačítko na zapnutí a vypnutí hry
+        start_stop();
+
         EndDrawing();
     }
+}
+
+int main()
+{
+    const int board_size = 800;
+    const int offset = 100;
+    
+    InitWindow(board_size + 2 * offset, board_size + 2 * offset, "Chess board");
+    SetTargetFPS(60);
+
+    //načtení figurek
+    load_figure();
+    
+    start_stop();
+
+    // boarda
+    board(offset, board_size, white_king, white_queen, white_pawn, white_knight, white_bishop, white_rook, black_king, black_queen, black_pawn, black_knight, black_bishop, black_rook);
 
     unload_figure();
     CloseWindow();
