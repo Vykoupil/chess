@@ -111,96 +111,96 @@ void black_figure(int offset, int squaresize, Texture2D king, Texture2D queen, T
 
 }
 
-void start_stop()
-{
-    const int width = 75;
-    const int height = 50;
-    const int cord_x = 912.5;
-    const int cord_y = 475;
-
-    if(GetMouseX() >= 912.5 && GetMouseX() <= 987.5 && GetMouseY() >= 475 && GetMouseY() <= 525 && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-    {
-        DrawRectangle(cord_x, cord_y, width, height, RED);
-        DrawText("Stop", cord_x + 10, cord_y + 15, 20, BLACK);
-    }else
-    {
-        DrawRectangle(cord_x, cord_y, width, height, GREEN);
-        DrawText("Start", cord_x + 10, cord_y + 15, 20, BLACK);
-    }
-}
-
 //funkce na vykreslení šachovnice a figurek
 void board(int offset, int board_size, Texture2D white_king, Texture2D white_queen, Texture2D white_pawn, Texture2D white_knight, Texture2D white_bishop, Texture2D white_rook, Texture2D black_king, Texture2D black_queen, Texture2D black_pawn, Texture2D black_knight, Texture2D black_bishop, Texture2D black_rook)
 {
-    while(!WindowShouldClose())
+
+
+    int squareSize = board_size / 8; // Každé políčko bude mít přesně 100x100 pixelů
+
+    // Cyklus pro 8 řádků (shora dolů)
+    for (int r = 0; r < 8; r++)
     {
-        BeginDrawing();
-        ClearBackground(GRAY); // Základní pozadí okna
-
-        int squareSize = board_size / 8; // Každé políčko bude mít přesně 100x100 pixelů
-
-        // Cyklus pro 8 řádků (shora dolů)
-        for (int r = 0; r < 8; r++)
+        // Cyklus pro 8 sloupců (zleva doprava)
+        for (int c = 0; c < 8; c++)
         {
-            // Cyklus pro 8 sloupců (zleva doprava)
-            for (int c = 0; c < 8; c++)
+            int x = offset + c * squareSize;
+            int y = offset + r * squareSize;
+            // Střídání barev políček
+            if ((r + c) % 2 == 0)
             {
-                int x = offset + c * squareSize;
-                int y = offset + r * squareSize;
-                // Střídání barev políček
-                if ((r + c) % 2 == 0)
-                {
-                    // Světlá políčka (Raylib má barvu BEIGE)
-                    DrawRectangle(x, y, squareSize, squareSize, BEIGE);
-                }
-                else
-                {
-                    // Tmavá políčka (Raylib má barvu BROWN)
-                    DrawRectangle(x, y, squareSize, squareSize, BROWN);
-                }
+                // Světlá políčka (Raylib má barvu BEIGE)
+                DrawRectangle(x, y, squareSize, squareSize, BEIGE);
+            }
+            else
+            {
+                // Tmavá políčka (Raylib má barvu BROWN)
+                DrawRectangle(x, y, squareSize, squareSize, BROWN);
             }
         }
-
-        //Nadpis
-        DrawText("Chess Board", board_size / 2 - 75, board_size / 2 - 400, 40, BLACK);
-            
-        // Název pole
-        char chars[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
-        int numbers[] = {8, 7, 6, 5, 4, 3, 2, 1};
-
-        for(int i = 0; i < 8; i++)
-        {
-            DrawText(TextFormat("%c", chars[i]), offset + i * squareSize + squareSize / 2 - 10, offset + board_size + 10, 20, BLACK);
-            DrawText(TextFormat("%d", numbers[i]), offset - 30, offset + i * squareSize + squareSize / 2 - 10, 20, BLACK);
-        }
-
-        //vykreslení figurek
-        white_figure(offset, squareSize, white_king, white_queen, white_pawn, white_knight, white_bishop, white_rook);
-        black_figure(offset, squareSize, black_king, black_queen, black_pawn, black_knight, black_bishop, black_rook);
-
-        //tlačítko na zapnutí a vypnutí hry
-        start_stop();
-
-        EndDrawing();
     }
+
+    //Nadpis
+    DrawText("Chess Board", board_size / 2 - 75, board_size / 2 - 400, 40, BLACK);
+            
+    // Název pole
+    char chars[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    int numbers[] = {8, 7, 6, 5, 4, 3, 2, 1};
+
+    for(int i = 0; i < 8; i++)
+    {
+        DrawText(TextFormat("%c", chars[i]), offset + i * squareSize + squareSize / 2 - 10, offset + board_size + 10, 20, BLACK);
+        DrawText(TextFormat("%d", numbers[i]), offset - 30, offset + i * squareSize + squareSize / 2 - 10, 20, BLACK);
+    }
+
+    //vykreslení figurek
+    white_figure(offset, squareSize, white_king, white_queen, white_pawn, white_knight, white_bishop, white_rook);
+    black_figure(offset, squareSize, black_king, black_queen, black_pawn, black_knight, black_bishop, black_rook);
+
 }
 
 int main()
 {
     const int board_size = 800;
     const int offset = 100;
+    const int width = 100;
+    const int height = 60;
+    const double cord_x = 460;
+    const double cord_y = 475;
+    bool is_running = false;
     
     InitWindow(board_size + 2 * offset, board_size + 2 * offset, "Chess board");
     SetTargetFPS(60);
 
     //načtení figurek
     load_figure();
+
+    while(!WindowShouldClose())
+    {
+        BeginDrawing();
+        ClearBackground(GRAY); // Základní pozadí okna
+
+        
+        DrawRectangle(cord_x, cord_y, width, height, GREEN);
+        DrawText("Start", cord_x + 20, cord_y + 20, 20, BLACK);
+
+        if(GetMouseX() >= 460 && GetMouseX() <= 560 && GetMouseY() >= 475 && GetMouseY() <= 535 && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        {
+            is_running = !is_running;
+        }
+
+        if(is_running)
+        {
+            
+            DrawRectangle(912.5, 475, 75, 50, RED);
+            DrawText("Stop", 912.5 + 15, 475 + 15, 20, BLACK);
+            board(offset, board_size, white_king, white_queen, white_pawn, white_knight, white_bishop, white_rook, black_king, black_queen, black_pawn, black_knight, black_bishop, black_rook);
+        }
+
+        EndDrawing();
+    }
+
     
-    start_stop();
-
-    // boarda
-    board(offset, board_size, white_king, white_queen, white_pawn, white_knight, white_bishop, white_rook, black_king, black_queen, black_pawn, black_knight, black_bishop, black_rook);
-
     unload_figure();
     CloseWindow();
     return 0;
