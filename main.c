@@ -188,6 +188,7 @@ bool rook_move(int starting_row, int starting_col, int final_row, int final_col,
 
     int row_step = 0;
 
+    // zajištění aby neělo skákat přes figurky
     if(final_row > starting_row)
     {
         row_step = 1;
@@ -220,6 +221,7 @@ bool rook_move(int starting_row, int starting_col, int final_row, int final_col,
         current_col += col_step;
     }
 
+    // ověření že neseberu mojí figurku
     int final_square = board[final_row][final_col];
 
     if (piece > 0 && final_square > 0)
@@ -234,6 +236,128 @@ bool rook_move(int starting_row, int starting_col, int final_row, int final_col,
     }
     
     
+}
+
+bool queen_move(int starting_row, int starting_col, int final_row, int final_col, int piece)
+{
+    int row_diff = abs(final_row - starting_row);
+    int col_diff = abs(final_col - starting_col);
+
+    bool is_valid = (row_diff == 0 && col_diff > 0) || (row_diff > 0 && col_diff == 0) || (row_diff == col_diff);
+
+    if (!is_valid)
+    {
+        return false;
+    }
+
+    // nemužu skákat přes figurky
+    int row_step = 0;
+
+    if (final_row > starting_row)
+    {
+        row_step = 1;
+    }else if(final_row < starting_row)
+    {
+        row_step = -1;
+    }else{}
+
+    int col_step = 0;
+    
+    if (final_col > starting_col)
+    {
+        col_step = 1;
+    }else if(final_col < starting_col)
+    {
+        col_step = -1;
+    }else{}
+
+    int current_row = starting_row + row_step;
+    int current_col = starting_col + col_step;
+    
+    while(current_row != final_row || current_col != final_col)
+    {
+        if(board[current_row][current_col] != EMPTY)
+        {
+            return false;
+        }
+        
+        current_row += row_step;
+        current_col += col_step;
+    }
+    
+    // ověření že neberu vlastní figurku
+    int final_square = board[final_row][final_col];
+
+    if (piece > 0 && final_square > 0)
+    {
+        return false;
+    }else if(piece < 0 && final_square < 0)
+    {
+        return false;
+    }else
+    {
+        return true;
+    }
+}
+
+bool bishop_move(int starting_row, int starting_col, int final_row, int final_col, int piece)
+{
+    int row_diff = abs(final_row - starting_row);
+    int col_diff = abs(final_col - starting_col);
+
+    bool is_valid = (row_diff == col_diff);
+
+    if (!is_valid)
+    {
+        return false;
+    }
+    
+    int row_step = 0;
+
+    if (final_row > starting_row)
+    {
+        row_step = 1;
+    }else if(final_row < starting_row)
+    {
+        row_step = -1;
+    }else{}
+
+    int col_step = 0;
+    
+    if (final_col > starting_col)
+    {
+        col_step = 1;
+    }else if(final_col < starting_col)
+    {
+        col_step = -1;
+    }else{}
+
+    int current_row = starting_row + row_step;
+    int current_col = starting_col + col_step;
+
+    while(current_row != final_row || current_col != final_col)
+    {
+        if (board[current_row][current_col] != EMPTY)
+        {
+            return false;
+        }
+        
+        current_row += row_step;
+        current_col += col_step;
+    }
+
+    int final_square = board[final_row][final_col];
+
+    if (piece > 0 && final_square > 0)
+    {
+        return false;
+    }else if(piece < 0 && final_square < 0)
+    {
+        return false;
+    }else
+    {
+        return true;
+    }
 }
 
 int main()
@@ -303,9 +427,7 @@ int main()
 
                             TraceLog(LOG_INFO, "Knight moves to the [%d][%d]", row, col);
                         }
-                    }
-
-                    if (currentPiece == W_ROOK || currentPiece == B_ROOK)
+                    }else if (currentPiece == W_ROOK || currentPiece == B_ROOK)
                     {
                         if (rook_move(selected_row, selected_col, row, col, currentPiece))
                         {
@@ -313,9 +435,30 @@ int main()
                             board[selected_row][selected_col] = EMPTY;
 
                             TraceLog(LOG_INFO, "Rook moves to the [%d][%d]", row, col);
+                        } 
+                    }else if(currentPiece == W_QUEEN ||currentPiece == B_QUEEN)
+                    {
+                        if (queen_move(selected_row, selected_col, row, col, currentPiece))
+                        {
+                            board[row][col] = currentPiece;
+                            board[selected_row][selected_col] = EMPTY;
+
+                            TraceLog(LOG_INFO, "Queen moves to the [%d][%d]", row, col);
+                        }
+                        
+                    }else if(currentPiece == W_BISHOP || currentPiece == B_BISHOP)
+                    {
+                        if (bishop_move(selected_row, selected_col, row, col, currentPiece))
+                        {
+                            board[row][col] = currentPiece;
+                            board[selected_row][selected_col] = EMPTY;
+
+                            TraceLog(LOG_INFO, "Biship moves to the [%d][%d]", row, col);
                         }
                         
                     }
+
+
                     
 
                     // Ať už byl tah platný nebo ne, po pokusu o přesun výběr odznačíme
