@@ -360,6 +360,144 @@ bool bishop_move(int starting_row, int starting_col, int final_row, int final_co
     }
 }
 
+bool pawn_move(int starting_row, int starting_col, int final_row, int final_col, int piece)
+{
+    int row_diff = final_row - starting_row;
+    int col_diff = abs(final_col - starting_col);
+    int final_square = board[final_row][final_col];
+
+    bool is_valid = (row_diff == 1 && col_diff == 0 && board[final_row][final_col] == 0);
+
+    if(piece > 0)
+    {
+        is_valid = (col_diff == 0 && row_diff == -1 && final_col == EMPTY) ||
+                   (col_diff == 0 && row_diff == -2 && starting_row == 6 && final_square == EMPTY && board[starting_row - 1][starting_col] == EMPTY) ||
+                   (col_diff == 1 && row_diff == -1 && final_square < 0);
+    }else if(piece < 0)
+    {
+        is_valid = (col_diff == 0 && row_diff == 1 && final_square == EMPTY) ||
+                   (col_diff == 0 && row_diff == 2 && starting_row == 1 && final_square == EMPTY && board[starting_row + 1][starting_col] == EMPTY) ||
+                   (col_diff == 1 && row_diff == 1 && final_square > 0);
+    }else
+    {
+        return false;
+    }
+
+    if (!is_valid)
+    {
+        return false;
+    }
+
+    int row_step = 0;
+
+    if (final_row > starting_row)
+    {
+        row_step = 1;
+    }else if(final_row < starting_row)
+    {
+        row_step = -1;
+    }else{}
+
+    int col_step = 0;
+    
+    if (final_col > starting_col)
+    {
+        col_step = 1;
+    }else if(final_col < starting_col)
+    {
+        col_step = -1;
+    }else{}
+
+    int current_row = starting_row + row_step;
+    int current_col = starting_col + col_step;
+    
+    while(current_row != final_row || current_col != final_col)
+    {
+        if(board[current_row][current_col] != EMPTY)
+        {
+            return false;
+        }
+        
+        current_row += row_step;
+        current_col += col_step;
+    }
+
+    if(piece > 0 && final_square > 0)
+    {
+        return false;
+    }else if(piece < 0 && final_square < 0)
+    {
+        return false;
+    }else
+    {
+        return true;
+    }
+}
+
+bool white_king_moved = false;
+bool white_rook_a1_moved = false;
+bool white_rook_h1_moved = false;
+
+bool black_king_moved = false;
+bool black_rook_a8_moved = false;
+bool black_rook_h8_moved = false;
+
+bool king_move(int starting_row, int starting_col, int final_row, int final_col, int piece)
+{
+    int row_diff = abs(final_row - starting_row);
+    int col_diff = abs(final_col - starting_col);
+
+    // rošáda
+
+    if((row_diff == 0 && col_diff == 2) && (piece > 0 && starting_row == 7 && starting_col == 4 && !white_king_moved))
+    {
+        //malá roška
+        if((final_col == 6 && !white_rook_h1_moved) && (board[7][6] == EMPTY && board[7][5] == EMPTY))
+        {
+            return true;
+        }
+        // velká roška
+        else if((final_col == 2 && !white_rook_a1_moved) && (board[7][1] == EMPTY && board[7][2] == EMPTY && board[7][3] == EMPTY))
+        {
+            return true;
+        }
+        
+        return false;
+        
+    }else if((row_diff == 0 && col_diff == 2) && (piece < 0 && starting_row == 0 && starting_col == 4 && !black_king_moved))
+    {
+        if((final_col == 6 && !black_rook_h8_moved) && (board[0][5] == EMPTY && board[0][6] == EMPTY))
+        {
+            return true;
+        }else if((final_col == 2 && !black_rook_a8_moved) && (board[0][3] == EMPTY && board[0][2] == EMPTY && board[0][1] == EMPTY))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool is_valid = (row_diff <= 1 && col_diff <= 1) && (row_diff > 0 || col_diff > 0);
+
+    if (!is_valid)
+    {
+        return false;
+    }
+
+    int final_square = board[final_row][final_col];
+
+    if(piece < 0 && final_square < 0)
+    {
+        return false;
+    }else if(piece > 0 && final_square > 0)
+    {
+        return false;
+    }else
+    {
+        return true;
+    }
+}
+
 int main()
 {
     const int board_size = 800;
@@ -434,6 +572,16 @@ int main()
                             board[row][col] = currentPiece;
                             board[selected_row][selected_col] = EMPTY;
 
+                            if(currentPiece == W_ROOK)
+                            {
+                                if(selected_row == 7 && selected_col == 0) white_rook_a1_moved = true;
+                                if(selected_row == 7 && selected_col == 7) white_rook_h1_moved = true;
+                            }else if(currentPiece == B_ROOK)
+                            {
+                                if(selected_row == 0 && selected_col == 0) white_rook_a1_moved = true;
+                                if(selected_row == 0 && selected_col == 7) white_rook_a1_moved = true;
+                            }
+
                             TraceLog(LOG_INFO, "Rook moves to the [%d][%d]", row, col);
                         } 
                     }else if(currentPiece == W_QUEEN ||currentPiece == B_QUEEN)
@@ -456,9 +604,39 @@ int main()
                             TraceLog(LOG_INFO, "Biship moves to the [%d][%d]", row, col);
                         }
                         
+                    }else if(currentPiece == W_PAWN || currentPiece == B_PAWN)
+                    {
+                        if (pawn_move(selected_row, selected_col, row, col, currentPiece))
+                        {
+                            board[row][col] = currentPiece;
+                            board[selected_row][selected_col] = EMPTY;
+
+                            TraceLog(LOG_INFO, "Pawn moves to the [%d][%d]", row, col);
+                        }
+                    }else if(currentPiece == W_KING || currentPiece == B_KING)
+                    {
+                        if(king_move(selected_row, selected_col, row, col, currentPiece))
+                        {
+                            board[row][col] = currentPiece;
+                            board[selected_row][selected_col] = EMPTY;
+
+                            // mrdání se s rošádou
+                            if(col - selected_col == 2)
+                            {
+                                board[row][5] = board[row][7];
+                                board[row][7] = EMPTY;
+                            }else if(col - selected_col == -2)
+                            {
+                                board[row][3] = board[row][0];
+                                board[row][0] = EMPTY;
+                            }
+
+                            if(currentPiece == W_KING) white_king_moved = true;
+                            if(currentPiece == B_KING) black_king_moved = true;
+                                                    
+                            TraceLog(LOG_INFO, "King moves to the [%d][%d]", row, col);
+                        }
                     }
-
-
                     
 
                     // Ať už byl tah platný nebo ne, po pokusu o přesun výběr odznačíme
