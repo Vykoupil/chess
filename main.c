@@ -13,6 +13,7 @@ bool queen_move(int starting_row, int starting_col, int final_row, int final_col
 bool bishop_move(int starting_row, int starting_col, int final_row, int final_col, int piece);
 bool pawn_move(int starting_row, int starting_col, int final_row, int final_col, int piece);
 bool king_move(int starting_row, int starting_col, int final_row, int final_col, int piece);
+void reset_game();
 
 // ============================================================================
 // TEXTURY A GLOBÁLNÍ PROMĚNNÉ
@@ -91,6 +92,41 @@ void unload_figure()
     UnloadTexture(black_rook);
 }
 
+// Funkce pro kompletní restart desky
+void reset_game()
+{
+    int initial_board[8][8] = {
+        {-4, -2, -3, -5, -6, -3, -2, -4},
+        {-1, -1, -1, -1, -1, -1, -1, -1},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0},
+        {1, 1, 1, 1, 1, 1, 1, 1},
+        {4, 2, 3, 5, 6, 3, 2, 4}
+    };
+
+    for (int r = 0; r < 8; r++)
+    {
+        for (int c = 0; c < 8; c++)
+        {
+            board[r][c] = initial_board[r][c];
+        }
+    }
+
+    current_turn = 1;
+    is_game_over = false;
+    game_result = 0;
+    en_passant_row = -1;
+    en_passant_col = -1;
+    white_king_moved = false;
+    white_rook_a1_moved = false;
+    white_rook_h1_moved = false;
+    black_king_moved = false;
+    black_rook_a8_moved = false;
+    black_rook_h8_moved = false;
+}
+
 // ============================================================================
 // VYKRESLOVACÍ FUNKCE
 // ============================================================================
@@ -158,8 +194,8 @@ void draw_board(int offset, int board_size, int selected_row, int selected_col, 
             }
             else if (board[selected_row][selected_col] < 0)
             {
-                DrawRectangle(x, y, squareSize, squareSize, ColorAlpha(YELLOW, 0.6f));
-                DrawRectangleLinesEx((Rectangle){ (float)x, (float)y, (float)squareSize, (float)squareSize }, 3, YELLOW);
+                DrawRectangle(x, y, squareSize, squareSize, ColorAlpha(RED, 0.6f));
+                DrawRectangleLinesEx((Rectangle){ (float)x, (float)y, (float)squareSize, (float)squareSize }, 3, RED);
             }
         }
     }
@@ -577,6 +613,13 @@ int main()
                         board[row][col] = currentPiece;
                         board[selected_row][selected_col] = EMPTY;
 
+                        // Proměna pěšce (automaticky na dámu)
+                        if (currentPiece == W_PAWN && row == 0) {
+                            board[row][col] = W_QUEEN;
+                        } else if (currentPiece == B_PAWN && row == 7) {
+                            board[row][col] = B_QUEEN;
+                        }
+
                         bool castle_failed = false;
                         if (abs(currentPiece) == W_KING && abs(col - selected_col) == 2)
                         {
@@ -637,11 +680,11 @@ int main()
                                 is_game_over = true;
                                 if (is_in_check(current_turn))
                                 {
-                                    game_result = -current_turn; // Vyhrává ten, kdo tah předtím táhnul
+                                    game_result = -current_turn;
                                 }
                                 else
                                 {
-                                    game_result = 2; // Pat
+                                    game_result = 2;
                                 }
                             }
                         }
@@ -652,7 +695,6 @@ int main()
                 }
                 else if (board[row][col] != EMPTY)
                 {
-                    // Ochrana: Může vybrat pouze figurku týmu, který je zrovna na tahu
                     if ((current_turn == 1 && board[row][col] > 0) ||
                         (current_turn == -1 && board[row][col] < 0))
                     {
@@ -679,10 +721,8 @@ int main()
 
             if (mouse_tracker_start && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             {
+                reset_game(); // Kompletní reset šachovnice při startu
                 is_running = true;
-                current_turn = 1;
-                is_game_over = false;
-                game_result = 0;
             }
         }
         else
